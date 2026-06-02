@@ -29,6 +29,16 @@ alice@example.com
 password
 ```
 
+## GitHub Pages プレビュー
+
+ログイン UI と同意 UI の静的プレビューは GitHub Pages で確認できます。
+
+```text
+https://tep12345.github.io/ORY_HYDRA/
+```
+
+Pages は静的ホスティングのため、Hydra の実 API 連携は Docker Compose 環境で確認してください。
+
 ## 主要 URL
 
 - `http://localhost:3001`: サンプル OAuth クライアント

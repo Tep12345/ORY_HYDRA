@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ORY_HYDRA UI Preview</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f7fa;
+        color: #17202a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 18% 16%, rgba(23, 105, 170, 0.14), transparent 30%),
+          linear-gradient(135deg, #f8fafc 0%, #eef3f8 52%, #f8fafc 100%);
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+      }
+
+      .panel {
+        background: #101820;
+        color: #f8fafc;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 32px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 18px;
+      }
+
+      .mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: #18a999;
+        color: #101820;
+        font-weight: 900;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        align-self: flex-start;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        padding: 8px 12px;
+        color: #dbeafe;
+        font-size: 13px;
+      }
+
+      .status::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #18a999;
+      }
+
+      .flow {
+        display: grid;
+        gap: 12px;
+      }
+
+      .flow-step {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .flow-step span {
+        color: #bed3e7;
+        font-size: 13px;
+      }
+
+      .stage {
+        padding: 28px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 22px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .tabs {
+        display: inline-flex;
+        border: 1px solid #cad4df;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .tab {
+        border: 0;
+        background: transparent;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+        color: #536273;
+        cursor: pointer;
+      }
+
+      .tab.active {
+        background: #1769aa;
+        color: #ffffff;
+      }
+
+      .endpoint {
+        color: #536273;
+        font-size: 14px;
+        text-align: right;
+      }
+
+      .preview-area {
+        display: grid;
+        place-items: center;
+        min-height: 620px;
+      }
+
+      .screen {
+        display: none;
+        width: min(100%, 520px);
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+        border-radius: 8px;
+        padding: 28px;
+        box-shadow: 0 18px 44px rgba(39, 52, 67, 0.12);
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      h1 {
+        margin: 0 0 18px;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      h2 {
+        margin: 22px 0 10px;
+        font-size: 16px;
+      }
+
+      p {
+        line-height: 1.65;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        margin: 14px 0;
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      input[type="email"],
+      input[type="password"] {
+        border: 1px solid #c8d1dc;
+        border-radius: 6px;
+        font: inherit;
+        padding: 11px 12px;
+      }
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #1769aa;
+      }
+
+      .check-row {
+        display: flex;
+        grid-template-columns: 18px 1fr;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0;
+      }
+
+      .button,
+      button.primary,
+      button.secondary,
+      button.danger {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 42px;
+        border: 0;
+        border-radius: 6px;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        padding: 0 16px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: #1769aa;
+      }
+
+      .secondary {
+        background: #4b5968;
+      }
+
+      .danger {
+        background: #b3261e;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
+      .notice {
+        background: #eef6ff;
+        border: 1px solid #c8e1ff;
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .token {
+        overflow: auto;
+        background: #111827;
+        color: #f9fafb;
+        border-radius: 6px;
+        padding: 14px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 13px;
+      }
+
+      dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 8px 12px;
+      }
+
+      dt {
+        font-weight: 700;
+      }
+
+      dd {
+        margin: 0;
+      }
+
+      @media (max-width: 860px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .panel {
+          min-height: auto;
+        }
+
+        .stage {
+          padding: 18px;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .endpoint {
+          text-align: left;
+        }
+
+        .preview-area {
+          min-height: auto;
+          place-items: start center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="panel">
+        <div>
+          <div class="brand">
+            <div class="mark">H</div>
+            <span>ORY_HYDRA</span>
+          </div>
+        </div>
+
+        <div class="flow" aria-label="OAuth flow">
+          <div class="flow-step">
+            <strong>1. Client</strong>
+            <span>Authorization Code flow を開始</span>
+          </div>
+          <div class="flow-step">
+            <strong>2. Login</strong>
+            <span>Hydra がログイン UI へリダイレクト</span>
+          </div>
+          <div class="flow-step">
+            <strong>3. Consent</strong>
+            <span>要求 scope をユーザーが許可</span>
+          </div>
+          <div class="flow-step">
+            <strong>4. Callback</strong>
+            <span>コードをトークンへ交換</span>
+          </div>
+        </div>
+
+        <div class="status">GitHub Pages preview</div>
+      </aside>
+
+      <main class="stage">
+        <div class="topbar">
+          <div class="tabs" role="tablist" aria-label="Preview screens">
+            <button class="tab active" type="button" data-screen="client">Client</button>
+            <button class="tab" type="button" data-screen="login">Login</button>
+            <button class="tab" type="button" data-screen="consent">Consent</button>
+            <button class="tab" type="button" data-screen="tokens">Tokens</button>
+          </div>
+          <div class="endpoint">Pages URL: /ORY_HYDRA/</div>
+        </div>
+
+        <section class="preview-area" aria-live="polite">
+          <article class="screen active" id="client">
+            <h1>サンプルクライアント</h1>
+            <p class="notice">Authorization Code flow で Hydra にリダイレクトします。</p>
+            <div class="actions">
+              <button class="primary" type="button" data-screen="login">ログインして開始</button>
+            </div>
+          </article>
+
+          <article class="screen" id="login">
+            <h1>ログイン</h1>
+            <p class="notice">デモユーザー: alice@example.com / password</p>
+            <form>
+              <label>メールアドレス
+                <input type="email" autocomplete="email" value="alice@example.com">
+              </label>
+              <label>パスワード
+                <input type="password" autocomplete="current-password" value="password">
+              </label>
+              <div class="actions">
+                <button class="primary" type="button" data-screen="consent">ログイン</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="screen" id="consent">
+            <h1>アクセス許可</h1>
+            <dl>
+              <dt>Client</dt>
+              <dd>demo-client</dd>
+              <dt>Subject</dt>
+              <dd>user-alice</dd>
+            </dl>
+            <label class="check-row"><input type="checkbox" checked> openid</label>
+            <label class="check-row"><input type="checkbox" checked> profile</label>
+            <label class="check-row"><input type="checkbox" checked> email</label>
+            <label class="check-row"><input type="checkbox" checked> offline_access</label>
+            <div class="actions">
+              <button class="primary" type="button" data-screen="tokens">許可</button>
+              <button class="danger" type="button" data-screen="client">拒否</button>
+            </div>
+          </article>
+
+          <article class="screen" id="tokens">
+            <h1>認証済み</h1>
+            <p class="notice">Hydra からトークンを取得しました。</p>
+            <h2>ID Token claims</h2>
+            <pre class="token">{
+  "sub": "user-alice",
+  "email": "alice@example.com",
+  "name": "Alice Example",
+  "iss": "http://localhost:4444"
+}</pre>
+            <div class="actions">
+              <button class="secondary" type="button" data-screen="client">セッションを消す</button>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const tabs = [...document.querySelectorAll("[data-screen]")];
+      const screens = [...document.querySelectorAll(".screen")];
+
+      function showScreen(id) {
+        screens.forEach((screen) => {
+          screen.classList.toggle("active", screen.id === id);
+        });
+
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.toggle("active", tab.dataset.screen === id);
+        });
+      }
+
+      tabs.forEach((control) => {
+        control.addEventListener("click", () => showScreen(control.dataset.screen));
+      });
+    </script>
+  </body>
+</html>
