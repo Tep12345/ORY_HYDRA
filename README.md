@@ -37,6 +37,12 @@ password
 https://tep12345.github.io/ORY_HYDRA/
 ```
 
+GitHub の `Settings > Pages` で次のように設定してください。
+
+- Source: `Deploy from a branch`
+- Branch: `main`
+- Folder: `/docs`
+
 Pages は静的ホスティングのため、Hydra の実 API 連携は Docker Compose 環境で確認してください。
 
 ## 主要 URL
