@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: hydra
+      POSTGRES_DB: hydra
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra -d hydra"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  hydra-migrate:
+    image: oryd/hydra:v2.3.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DSN: postgres://hydra:hydra@postgres:5432/hydra?sslmode=disable
+    command: ["migrate", "sql", "-e", "--yes"]
+
+  hydra:
+    image: oryd/hydra:v2.3.0
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+    environment:
+      DSN: postgres://hydra:hydra@postgres:5432/hydra?sslmode=disable
+      URLS_SELF_ISSUER: http://localhost:4444
+      URLS_CONSENT: http://localhost:3000/consent
+      URLS_LOGIN: http://localhost:3000/login
+      URLS_LOGOUT: http://localhost:3000/logout
+      SECRETS_SYSTEM: you-should-change-this-secret-in-production
+      SERVE_PUBLIC_CORS_ENABLED: "true"
+      SERVE_PUBLIC_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
+      SERVE_PUBLIC_CORS_ALLOWED_METHODS: GET,POST,PUT,DELETE,OPTIONS
+      SERVE_PUBLIC_CORS_ALLOWED_HEADERS: "*"
+      LOG_LEVEL: debug
+    command: ["serve", "all", "--dev"]
+    healthcheck:
+      test: ["CMD", "hydra", "health", "ready", "--endpoint", "http://localhost:4445"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: ./app
+    depends_on:
+      hydra:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      AUTH_UI_PORT: 3000
+      CLIENT_PORT: 3001
+      HYDRA_ADMIN_URL: http://hydra:4445
+      HYDRA_PUBLIC_URL: http://localhost:4444
+      HYDRA_PUBLIC_INTERNAL_URL: http://hydra:4444
+      OAUTH_CLIENT_ID: demo-client
+      OAUTH_CLIENT_SECRET: demo-secret
+      OAUTH_REDIRECT_URI: http://localhost:3001/callback
+      SESSION_SECRET: dev-session-secret-change-me
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+
+volumes:
+  postgres-data:
