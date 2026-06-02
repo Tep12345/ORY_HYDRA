@@ -1,6 +1,6 @@
-# ORY Hydra Authentication and Authorization Service
+# ORY_HYDRA
 
-Hydra を OAuth2/OIDC 認可サーバとして使う最小構成です。Hydra はログイン画面やユーザー管理を持たないため、このリポジトリでは Express でログイン UI、同意 UI、サンプル OAuth クライアントを実装しています。
+ORY Hydra を OAuth2/OIDC 認可サーバとして使う最小構成です。Hydra はログイン画面やユーザー管理を持たないため、このリポジトリでは Express でログイン UI、同意 UI、サンプル OAuth クライアントを実装しています。
 
 ## 構成
 
