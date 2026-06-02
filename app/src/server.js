@@ -65,9 +65,22 @@ async function hydraAdmin(path, options = {}) {
 }
 
 async function ensureOAuthClient() {
-  const existing = await fetch(
-    `${hydraAdminUrl}/clients/${encodeURIComponent(oauthClientId)}`
-  );
+  console.log(`Using Hydra admin endpoint ${hydraAdminUrl}`);
+
+  let existing;
+  for (let attempt = 1; attempt <= 20; attempt += 1) {
+    try {
+      existing = await fetch(
+        `${hydraAdminUrl}/admin/clients/${encodeURIComponent(oauthClientId)}`
+      );
+      break;
+    } catch (error) {
+      if (attempt === 20) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
 
   if (existing.ok) {
     return;
@@ -79,7 +92,7 @@ async function ensureOAuthClient() {
     );
   }
 
-  await hydraAdmin("/clients", {
+  await hydraAdmin("/admin/clients", {
     method: "POST",
     body: JSON.stringify({
       client_id: oauthClientId,
@@ -214,6 +227,10 @@ function escapeHtml(value) {
 }
 
 function decodeJwt(token) {
+  if (!token) {
+    return null;
+  }
+
   const [, payload] = token.split(".");
   if (!payload) {
     return null;
@@ -232,12 +249,12 @@ authUi.get("/login", async (req, res, next) => {
     }
 
     const loginRequest = await hydraAdmin(
-      `/oauth2/auth/requests/login?login_challenge=${encodeURIComponent(challenge)}`
+      `/admin/oauth2/auth/requests/login?login_challenge=${encodeURIComponent(challenge)}`
     );
 
     if (loginRequest.skip && req.session.user) {
       const accepted = await hydraAdmin(
-        `/oauth2/auth/requests/login/accept?login_challenge=${encodeURIComponent(challenge)}`,
+        `/admin/oauth2/auth/requests/login/accept?login_challenge=${encodeURIComponent(challenge)}`,
         {
           method: "PUT",
           body: JSON.stringify({
@@ -295,7 +312,7 @@ authUi.post("/login", async (req, res, next) => {
     req.session.user = { id: user.id, email: user.email, name: user.name };
 
     const accepted = await hydraAdmin(
-      `/oauth2/auth/requests/login/accept?login_challenge=${encodeURIComponent(challenge)}`,
+      `/admin/oauth2/auth/requests/login/accept?login_challenge=${encodeURIComponent(challenge)}`,
       {
         method: "PUT",
         body: JSON.stringify({
@@ -321,7 +338,7 @@ authUi.get("/consent", async (req, res, next) => {
     }
 
     const consentRequest = await hydraAdmin(
-      `/oauth2/auth/requests/consent?consent_challenge=${encodeURIComponent(challenge)}`
+      `/admin/oauth2/auth/requests/consent?consent_challenge=${encodeURIComponent(challenge)}`
     );
 
     if (consentRequest.skip) {
@@ -365,7 +382,7 @@ authUi.post("/consent", async (req, res, next) => {
   try {
     const challenge = req.body.consent_challenge;
     const consentRequest = await hydraAdmin(
-      `/oauth2/auth/requests/consent?consent_challenge=${encodeURIComponent(challenge)}`
+      `/admin/oauth2/auth/requests/consent?consent_challenge=${encodeURIComponent(challenge)}`
     );
     const accepted = await acceptConsent(challenge, consentRequest, req.body.scope);
     res.redirect(accepted.redirect_to);
@@ -378,7 +395,7 @@ authUi.post("/consent/reject", async (req, res, next) => {
   try {
     const challenge = req.body.consent_challenge;
     const rejected = await hydraAdmin(
-      `/oauth2/auth/requests/consent/reject?consent_challenge=${encodeURIComponent(challenge)}`,
+      `/admin/oauth2/auth/requests/consent/reject?consent_challenge=${encodeURIComponent(challenge)}`,
       {
         method: "PUT",
         body: JSON.stringify({
@@ -426,7 +443,7 @@ async function acceptConsent(challenge, consentRequest, selectedScope) {
   };
 
   return hydraAdmin(
-    `/oauth2/auth/requests/consent/accept?consent_challenge=${encodeURIComponent(challenge)}`,
+    `/admin/oauth2/auth/requests/consent/accept?consent_challenge=${encodeURIComponent(challenge)}`,
     {
       method: "PUT",
       body: JSON.stringify({

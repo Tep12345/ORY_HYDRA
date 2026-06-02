@@ -44,7 +44,7 @@ services:
       LOG_LEVEL: debug
     command: ["serve", "all", "--dev"]
     healthcheck:
-      test: ["CMD", "hydra", "health", "ready", "--endpoint", "http://localhost:4445"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:4445/health/ready"]
       interval: 5s
       timeout: 5s
       retries: 30
